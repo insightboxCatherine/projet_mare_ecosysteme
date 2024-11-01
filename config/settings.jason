@@ -1,0 +1,19 @@
+json 
+{
+  "initial_population": {
+    "plants": 100,
+    "herbivores": 50,
+    "carnivores": 20
+  },
+  "growth_rate": {
+    "plants": 0.1,
+    "herbivores": 0.05,
+    "carnivores": 0.02
+  },
+  "predation_rate": 0.2,
+  "reproduction_rate": {
+    "plants": 0.3,
+    "herbivores": 0.2,
+    "carnivores": 0.1
+  }
+}
