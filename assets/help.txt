@@ -1,0 +1,34 @@
+User Guide for the Pond Ecosystem Simulation
+
+Welcome to the dynamic pond ecosystem simulation! 
+This guide explains how to interact with the simulation and make the most of its features.
+
+1. Starting the Simulation
+	Click the "Start" button to begin the simulation.
+	Use the sliders to set the initial parameters:
+	Plants: Adjust the starting number of plants in the pond.
+	Fish: Choose the number of fish at the beginning of the simulation.
+	Herons: Set the number of herons to include in the ecosystem.
+	Years: Select the number of years to simulate.
+
+2. During the Simulation
+	Once started, the simulation displays plants, fish, and herons in the pond.
+	Each species population will evolve based on growth, reproduction, and predation.
+	The results panel on the right updates in real time to show the current populations.
+
+3. Viewing Results
+	Click the "Show Graph" button to display a graph of the population dynamics over time.
+	The graph includes:
+		Plants (green): The base resource of the ecosystem.
+		Fish (blue): The intermediate consumers.
+		Herons (brown): The top predators.
+
+4. Additional Controls
+	The entities (plants, fish, and herons) in the pond are represented as icons, showing their current positions.
+	Each simulated year is displayed briefly to allow observation of population changes in real-time.
+	Press ESC during the graph view to return to the main simulation.
+
+5. Tips for a Better Experience
+	Experiment with different parameters by running multiple simulations to explore how changes affect the ecosystem.
+	Observe the balance between resource availability (plants) and the needs of consumers (fish and herons).
+	Have fun exploring the fascinating dynamics of this aquatic ecosystem! If you have any questions, refer to this guide or experiment with the controls to discover more.
