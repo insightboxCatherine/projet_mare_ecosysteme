@@ -1,5 +1,6 @@
 import pygame
 import pygame_gui
+import pygame.mixer
 import matplotlib.pyplot as plt
 from io import BytesIO
 from PIL import Image
@@ -24,6 +25,11 @@ class UserInterface:
         self.clock = pygame.time.Clock()
         self.manager = pygame_gui.UIManager((1500, 900))
         self.font = pygame.font.Font(None, 24)
+
+        # Initialize pygame mixer for music
+        pygame.mixer.init()
+        pygame.mixer.music.load("assets/sounds/marsh.ogg")  # Adjust file path if needed
+        pygame.mixer.music.set_volume(0.5)  # Set volume from 0.0 to 1.0
 
         # Load background, plant, fish, and heron images
         self.background_image = pygame.image.load("assets/images/pond_background.png").convert()
@@ -54,6 +60,14 @@ class UserInterface:
             text='Help',
             manager=self.manager
         )
+
+        # Toggle Music Button
+        self.music_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((400, 20), (120, 40)),
+            text="Toggle Music",
+            manager=self.manager
+        )
+        self.music_playing = True
     
         # Sliders for Plants, Fish, Herons, and Years
         self.plant_slider = pygame_gui.elements.UIHorizontalSlider(
@@ -142,6 +156,13 @@ class UserInterface:
             container=self.results_panel
         )
 
+    def toggle_music(self, play=True):
+        """Plays or stops the background music."""
+        if play:
+            pygame.mixer.music.play(-1)  # Infinite loop
+        else:
+            pygame.mixer.music.stop()    
+
     def update_results_panel(self, gen):
         """Update the results panel with current simulation data."""
         if self.simulation_running:
@@ -193,71 +214,63 @@ class UserInterface:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            elif event.type == pygame.KEYDOWN and self.showing_graph:
-                if event.key == pygame.K_ESCAPE:  # Close the graph display with ESCAPE key
+            
+            elif event.type == pygame.KEYDOWN:
+                if self.showing_graph and event.key == pygame.K_ESCAPE:  # Close the graph display
                     self.showing_graph = False
-            elif event.type == pygame.KEYDOWN and self.showing_help:
-                if event.key == pygame.K_ESCAPE:  # Close the graph display with ESCAPE key
+                elif self.showing_help and event.key == pygame.K_ESCAPE:  # Close the help display
                     self.showing_help = False
+            
             elif event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.start_button:
-                        
-                        # Clear placeholders
+                        # Clear placeholders and population data
                         self.placeholder_plants = []
                         self.placeholder_fish = []
                         self.placeholder_herons = []
-
-                        # Clear the population data in simulation_controller
                         self.simulation_controller.population_data = {
-                        'generation': [],
-                        'plants': [],
-                        'fish': [],
-                        'herons': []
-                    }
+                            'generation': [], 'plants': [], 'fish': [], 'herons': []
+                        }
 
                         self.simulation_running = True
-                        
-                        # Get values from sliders and apply initial conditions
+
+                        # Get slider values and apply initial conditions
                         num_plants = int(self.plant_slider.get_current_value())
                         num_fish = int(self.fish_slider.get_current_value())
                         num_herons = int(self.heron_slider.get_current_value())
                         years = int(self.year_slider.get_current_value())
-                        
-                        # Apply initial conditions and simulate for the specified number of years
+
                         self.simulation_controller.apply_initial_conditions(num_plants, num_fish, num_herons)
-        
+                        
                         # Simulate year by year
                         for gen in range(years):
                             self.simulation_controller.simulate_generation(gen)
-                            
-                            # Update results for the current year
                             self.update_results_panel(gen)
-                            
-                            # Redraw the entire interface to reflect the changes
                             self.display_interface()
                             
-                            # Process pending events (to keep the UI responsive)
-                            for event in pygame.event.get():
-                                if event.type == pygame.QUIT:
+                            for sub_event in pygame.event.get():
+                                if sub_event.type == pygame.QUIT:
                                     self.running = False
-                                    return  # Exit the loop if the window is closed
-
-                            # Update the GUI manager explicitly
-                            self.manager.update(0.01)  # Small time delta to update GUI elements
-
-                            # Introduce a delay between years (e.g., 1000ms for 1 second)
+                                    return
+                            
+                            self.manager.update(0.01)
                             pygame.time.wait(750)
 
-                        self.simulation_running = False  # Ensure the simulation does not run indefinitely
+                        self.simulation_running = False  # Stop simulation after running all years
+
                     elif event.ui_element == self.graph_button:
-                        # Only plot if there is data to display
                         if self.simulation_controller.population_data['generation']:
                             self.graph_surface = self.plot_population_dynamics(self.simulation_controller.population_data)
                             self.showing_graph = True
+
                     elif event.ui_element == self.help_button:
                         self.showing_help = True
-                      
+
+                    elif event.ui_element == self.music_button:
+                        #Toggle music on/off
+                        self.music_playing = not self.music_playing
+                        self.toggle_music(play=self.music_playing)
+
                 elif event.user_type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
                     # Update slider labels dynamically
                     if event.ui_element == self.plant_slider:
@@ -341,11 +354,16 @@ class UserInterface:
 
     def run(self):
         """Main loop for running the simulation."""
+        if not pygame.mixer.music.get_busy():  # Vérifie si la musique joue déjà
+            self.toggle_music(play=True)  # Démarre la musique de fond
+        
         while self.running:
             self.get_user_inputs()
             if not self.showing_graph and not self.showing_help and self.simulation_running:
                 self.simulation_controller.mare.simulate_growth()
-                
+
             self.display_interface()
             self.clock.tick(30)
+
+        pygame.mixer.music.stop()  # Arrête la musique à la fin
         pygame.quit()
